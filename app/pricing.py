@@ -42,6 +42,40 @@ def build_graph(tickers: Dict[str, Ticker]) -> Graph:
 
     return graph
 
+# Precio para las variaciones en 24 horas
+def _price_24h_ago(last_price: Decimal, variation_24h: Decimal) -> Optional[Decimal]:
+    # last = prev * (1 + var) => prev = last / (1 + var)
+    denom = Decimal("1") + variation_24h
+    if denom <= 0:
+        return None
+    return last_price / denom
+
+# Grafo para las variaciones en 24 horas
+def build_graph_24h(tickers: Dict[str, Ticker]) -> Graph:
+    """
+    Construye un grafo de conversiones de variaciones:
+      - Si existe BASE-QUOTE con precio p:
+          BASE -> QUOTE con tasa p
+          QUOTE -> BASE con tasa 1/p
+    """
+    graph: Graph = {}
+
+    def add_edge(c1: str, c2: str, rate: Decimal) -> None:
+        graph.setdefault(c1, []).append(Edge(to=c2, rate=rate))
+
+    for t in tickers.values():
+        pv24 = _price_24h_ago(t.last_price, t.price_variation_24h)
+        if pv24 is None or pv24 <= 0:
+            continue
+
+        base = t.base.upper()
+        quote = t.quote.upper()
+
+        add_edge(base, quote, pv24)
+        add_edge(quote, base, Decimal("1") / pv24)
+
+    return graph
+
 
 def find_rate_max_2_hops(graph: Graph, currency1: str, currency2: str) -> Optional[Decimal]:
     """

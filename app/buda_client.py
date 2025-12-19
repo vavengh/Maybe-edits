@@ -15,10 +15,11 @@ class BudaUpstreamError(RuntimeError):
 
 @dataclass(frozen=True)
 class Ticker:
-    market_id: str          # e.g. "BTC-CLP"
-    base: str               # e.g. "BTC"
-    quote: str              # e.g. "CLP"
-    last_price: Decimal     # precio último
+    market_id: str                  # e.g. "BTC-CLP"
+    base: str                       # e.g. "BTC"
+    quote: str                      # e.g. "CLP"
+    last_price: Decimal             # precio último
+    price_variation_24h: Decimal    # variación 24h (porcentaje)
 
 
 def _parse_decimal(value: object, field_name: str) -> Decimal:
@@ -30,6 +31,14 @@ def _parse_decimal(value: object, field_name: str) -> Decimal:
     except (InvalidOperation, ValueError) as exc:
         raise BudaUpstreamError(f"Invalid '{field_name}' value from Buda: {value}") from exc
 
+# New feature
+def _parse_variation_24h(value: object) -> Decimal:
+    if not isinstance(value, str):
+        raise BudaUpstreamError(f"Invalid 'price_variation_24h' type from Buda: expected str")
+    try:
+        return Decimal(value)
+    except (InvalidOperation, ValueError) as exc:
+        raise BudaUpstreamError(f"Invalid 'price_variation_24h' value from Buda: {value}") from exc
 
 def _split_market_id(market_id: str) -> tuple[str, str]:
     if "-" not in market_id:
@@ -75,6 +84,12 @@ class BudaPublicClient:
             if not isinstance(market_id, str):
                 continue
 
+            # price_variation_24h viene como string (por ejemplo, "-2.5" para -2.5%)
+            pv = item.get("price_variation_24h")
+            if pv is None:
+                continue
+            variation = _parse_variation_24h(pv)
+
             # last_price viene como array ["<price>", "<currency>"]
             last_price = item.get("last_price")
             if not (isinstance(last_price, list) and len(last_price) >= 1):
@@ -88,6 +103,7 @@ class BudaPublicClient:
                 base=base,
                 quote=quote,
                 last_price=price,
+                price_variation_24h=variation,
             )
 
         return out

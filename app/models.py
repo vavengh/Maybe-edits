@@ -37,3 +37,13 @@ class PortfolioValueResponse(BaseModel):
     breakdown: Dict[str, Decimal] = Field(
         ..., description="Detalle por cripto del valor en moneda objetivo"
     )
+
+class Valuation(BaseModel):
+    total: Decimal
+    breakdown: Dict[str, Decimal]
+
+class PortfolioValue24hResponse(BaseModel):
+    current: Valuation
+    past_24h: Valuation
+    delta_24h: Valuation
+    delta_total_24h: Decimal
