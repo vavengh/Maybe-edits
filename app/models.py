@@ -6,7 +6,7 @@ from typing import Dict, Literal
 from pydantic import BaseModel, Field, condecimal
 
 
-FiatCurrency = Literal["CLP", "PEN", "COP", "BTC", "ETH"]
+FiatCurrency = Literal["CLP", "PEN", "COP", "BTC", "ETH", "BCH"]
 
 # Cantidad no negativa, con decimales (ej: 0.5 BTC)
 NonNegativeDecimal = condecimal(ge=0)  # type: ignore[valid-type]
