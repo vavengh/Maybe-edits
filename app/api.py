@@ -27,27 +27,30 @@ def value_portfolio(payload: PortfolioRequest) -> PortfolioValueResponse:
     fiat = payload.fiat_currency.upper()
 
     breakdown: dict[str, Decimal] = {}
-    unpriced: list[str] = []
+    # unpriced: list[str] = []
     total = Decimal("0")
 
     for symbol, amount in payload.portfolio.items():
         currency_symbol = symbol.upper()
 
         rate = find_rate_max_2_hops(graph, currency_symbol, fiat)
-        if rate is None:
-            unpriced.append(currency_symbol)
-            continue
+        # if rate is None:
+        #     unpriced.append(currency_symbol)
+        #     continue
 
         value = Decimal(amount) * rate
         breakdown[currency_symbol] = value
         total += value
-
     return PortfolioValueResponse(
-        fiat_currency=payload.fiat_currency,
         total=total,
         breakdown=breakdown,
-        unpriced=unpriced,
     )
+    # return PortfolioValueResponse(
+    #     fiat_currency=payload.fiat_currency,
+    #     total=total,
+    #     breakdown=breakdown,
+    #     unpriced=unpriced,
+    # )
 
 
 @router.get("/buda/tickers")

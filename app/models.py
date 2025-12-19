@@ -21,13 +21,19 @@ class PortfolioRequest(BaseModel):
     fiat_currency: FiatCurrency = Field(..., description="Moneda fiat de referencia")
 
 
+# class PortfolioValueResponse(BaseModel):
+#     fiat_currency: FiatCurrency
+#     total: Decimal = Field(..., description="Valor total del portafolio en la fiat solicitada")
+#     breakdown: Dict[str, Decimal] = Field(
+#         ..., description="Detalle por cripto del valor en fiat"
+#     )
+#     unpriced: list[str] = Field(
+#         default_factory=list,
+#         description="Criptos que no pudieron valorizarse (por falta de mercado, etc.)",
+#     )
+
 class PortfolioValueResponse(BaseModel):
-    fiat_currency: FiatCurrency
-    total: Decimal = Field(..., description="Valor total del portafolio en la fiat solicitada")
+    total: Decimal = Field(..., description="Valor total del portafolio en la moneda objetivo")
     breakdown: Dict[str, Decimal] = Field(
-        ..., description="Detalle por cripto del valor en fiat"
-    )
-    unpriced: list[str] = Field(
-        default_factory=list,
-        description="Criptos que no pudieron valorizarse (por falta de mercado, etc.)",
+        ..., description="Detalle por cripto del valor en moneda objetivo"
     )
